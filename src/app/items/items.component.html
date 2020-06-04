@@ -1,5 +1,53 @@
-<div>items work</div>
-<div *ngFor='let item of result'> 
-    <div><img [src]='image' alt="Red dot" />
-    <div>{{item.galleryURL}} </div>
-    </div>{{item.title}} </div>
+<div class="alert alert-primary" role="alert">
+  items work!
+</div>
+<div class="row">
+  <div class="col-lg-6">
+    <div class="input-group">    
+      <input type="text" class="form-control" placeholder="Search for...">
+    </div><!-- /input-group -->
+  </div><!-- /.col-lg-6 -->
+  <div class="col-lg-6">
+    <div class="input-group">
+    <nav aria-label="Paging">
+      <ul class="pagination pagination-sm justify-content-end">
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        <li *ngFor='let in of counter(); let i = index' class="page-item"><a class="page-link" [routerLink]="['/items']" 
+            (click)="onPagingClick(i+1)">{{i+1}}</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+</div><!-- /input-group -->
+</div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Image</th>
+      <th scope="col" sortable="title" (sort)="onSort($event)">Title</th>
+      <th scope="col" sortable="priceFormatted" (sort)="onSort($event)">Price</th>
+      <th scope="col" sortable="priceFormatted" (sort)="onSort($event)">Provider</th>
+      <th scope="col" sortable="createdOn" (sort)="onSort($event)">createdOn</th>
+      <th scope="col" sortable="updatedOn" (sort)="onSort($event)">updatedOn</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor='let item of wrappedItems'>
+      <td><img [src]='item.safeImage' alt='item.title' /></td>
+      <td>{{item.item.title}}</td>      
+      <td>{{item.item.priceFormatted}}</td>
+      <td>{{item.item.providerName}} </td>
+      <td>{{item.item.createdOn | date}} </td>
+      <td>{{item.item.updatedOn | date:'MMM-dd-yyyy hh:ss'}} </td>
+    </tr>
+  </tbody>
+</table>

@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 
 import { Items } from '../models/items';
+import { ItemsPage } from '../models/items-page';
 
 @Injectable({
   providedIn: 'root',
@@ -139,7 +140,7 @@ export class ItemsService extends BaseService {
      */
     itemsPerPage: number;
 
-  }): Observable<StrictHttpResponse<Items>> {
+  }): Observable<StrictHttpResponse<ItemsPage>> {
 
     const rb = new RequestBuilder(this.rootUrl, ItemsService.GetItemsByPagePath, 'get');
     if (params) {
@@ -157,7 +158,7 @@ export class ItemsService extends BaseService {
     })).pipe(
       filter((r: any) => r instanceof HttpResponse),
       map((r: HttpResponse<any>) => {
-        return r as StrictHttpResponse<Items>;
+        return r as StrictHttpResponse<ItemsPage>;
       })
     );
   }
@@ -199,10 +200,10 @@ export class ItemsService extends BaseService {
      */
     itemsPerPage: number;
 
-  }): Observable<Items> {
+  }): Observable<ItemsPage> {
 
     return this.getItemsByPage$Response(params).pipe(
-      map((r: StrictHttpResponse<Items>) => r.body as Items)
+      map((r: StrictHttpResponse<ItemsPage>) => r.body as ItemsPage)
     );
   }
 

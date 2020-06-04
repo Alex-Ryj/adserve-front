@@ -7,6 +7,7 @@ export interface Item {
   deleted?: boolean;
   description?: string;
   galleryURL?: string;
+  id?: string;
   image64BaseStr?: string;
   location?: string;
   modifiedImage64BaseStr?: string;
