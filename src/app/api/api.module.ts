@@ -5,6 +5,7 @@ import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { ItemService } from './services/item.service';
 import { ItemsService } from './services/items.service';
+import { SearchService } from './services/search.service';
 
 /**
  * Module that provides all services and configuration.
@@ -16,6 +17,7 @@ import { ItemsService } from './services/items.service';
   providers: [
     ItemService,
     ItemsService,
+    SearchService,
     ApiConfiguration
   ],
 })

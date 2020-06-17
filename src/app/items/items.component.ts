@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute, ParamMap, NavigationEnd } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormControl } from '@angular/forms';
-import { ItemsService } from '../api/services';
-import { Item } from '../api/models';
+import { ItemsService, SearchService } from '../api/services';
+import { Item, ItemsPage } from '../api/models';
 
 @Component({
   selector: 'app-items',
@@ -13,7 +13,7 @@ import { Item } from '../api/models';
 export class ItemsComponent implements OnInit {
 
   rowsForm = new FormControl(10);
-  rowsOptions = [10,30,50,100];
+  rowsOptions = [10, 30, 50, 100];
 
   wrappedItems: ItemWrapper[] = [];
   providerName: string = 'eBay';
@@ -23,9 +23,11 @@ export class ItemsComponent implements OnInit {
   totalCount: number;
   itemsPerPage: number = 10;
   totalPages: number;
+  searchOn: boolean = false;
+  searchWords: string;
 
-  constructor(public itemsService: ItemsService, private domSanitizer: DomSanitizer,
-    private route: ActivatedRoute, private router: Router, private ngZone: NgZone, private cdr: ChangeDetectorRef, ) {
+  constructor(private itemsService: ItemsService, private searchService: SearchService, private domSanitizer: DomSanitizer,
+    private route: ActivatedRoute, ) {
   }
 
   ngOnInit(): void {
@@ -43,17 +45,24 @@ export class ItemsComponent implements OnInit {
 
   getItems(_providerName: string, _sortedField: string, _sortedDesc: boolean, _pageNum: number, _itemsPerPage: number): void {
     this.itemsService.getItemsByPage({ providerName: _providerName, sortedField: _sortedField, sortedDesc: _sortedDesc, pageNum: _pageNum, itemsPerPage: _itemsPerPage })
-      .subscribe(result => {
-        this.wrappedItems.length = 0;
-        result.items.forEach(item => {
-          let itemWrapper = new ItemWrapper();
-          itemWrapper.item = item;
-          itemWrapper.safeImage = this.domSanitizer.bypassSecurityTrustUrl('data:image/jpg;base64,' + item.image64BaseStr);
-          this.wrappedItems.push(itemWrapper);
-        });
-        this.totalCount = result.totalCount;
-        this.totalPages = Math.ceil(this.totalCount / this.itemsPerPage);
-      });
+      .subscribe(result => this.processResult(result));
+  }
+
+  searchItems(_searchWords: string, _maxItems: number, _pageNum: number, _itemsPerPage: number): void {
+    this.searchService.getItemsSearchByPage({ searchWords: _searchWords, maxItems: _maxItems, pageNum: _pageNum, itemsPerPage: _itemsPerPage
+    }).subscribe(result => this.processResult(result));
+  }
+
+  processResult(result: ItemsPage) {
+    this.wrappedItems.length = 0;
+    result.items.forEach(item => {
+      let itemWrapper = new ItemWrapper();
+      itemWrapper.item = item;
+      itemWrapper.safeImage = this.domSanitizer.bypassSecurityTrustUrl('data:image/jpg;base64,' + item.image64BaseStr);
+      this.wrappedItems.push(itemWrapper);
+    });
+    this.totalCount = result.totalCount;
+    this.totalPages = Math.ceil(this.totalCount / this.itemsPerPage);
   }
 
   onSort(sort: any) { }
@@ -62,12 +71,32 @@ export class ItemsComponent implements OnInit {
     console.log('clicked: ' + value);
     if (value >= 0 && value < this.totalPages) {
       this.pageNum = value;
-      this.getItems(this.providerName, this.sortedField, this.sortedDesc, this.pageNum, this.itemsPerPage);
+      if(this.searchOn) {
+        this.searchItems(this.searchWords, 200, this.pageNum, this.itemsPerPage);
+      } else {
+        this.getItems(this.providerName, this.sortedField, this.sortedDesc, this.pageNum, this.itemsPerPage);
+      }
     }
   }
 
   counter() {
     return new Array(this.totalPages);
+  }
+
+  onSearch(value: string) {
+    console.log("search words: " + value)
+    if(value.length>2) {
+      this.searchOn = true;
+      this.searchWords = value;
+      this.pageNum = 0;
+      this.searchItems(this.searchWords, 200, this.pageNum, this.itemsPerPage);
+    } else {
+      this.searchOn = false;
+    }
+    if(value.length==0) {
+      this.pageNum = 0;
+      this.getItems(this.providerName, this.sortedField, this.sortedDesc, this.pageNum, this.itemsPerPage);
+    }
   }
 
   onRowNumberChange(value: number) {
